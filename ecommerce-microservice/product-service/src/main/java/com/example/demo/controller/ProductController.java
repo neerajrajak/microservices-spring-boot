@@ -24,13 +24,13 @@ public class ProductController {
 	@Autowired
 	private ProductService productService;
 
-	@PostMapping("/create")
+	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public void createProduct(@RequestBody ProductRequest productRequest) {
 		productService.createProduct(productRequest);
 	}
 	
-	@GetMapping("/all")
+	@GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ProductResponse> getAllProducts() {
         return productService.getAllProducts();
