@@ -4,12 +4,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.ordermicros.example.dto.InventoryResponse;
 import com.ordermicros.example.dto.OrderLineItemDto;
 import com.ordermicros.example.dto.OrderRequest;
+import com.ordermicros.example.event.OrderPlacedEvent;
 import com.ordermicros.example.model.Order;
 import com.ordermicros.example.model.OrderLineItem;
 import com.ordermicros.example.repository.OrderRepository;
@@ -25,6 +27,8 @@ public class OrderService {
 	private final OrderRepository orderRepository;
 
 	private final WebClient.Builder webClientBuilder;
+	
+	private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
 	public String placeOrder(OrderRequest orderRequest) {
 		Order order = new Order();
@@ -53,6 +57,7 @@ public class OrderService {
 		
 		if(allProductsInStock) {
 			orderRepository.save(order);
+			kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
 			log.info("Order created with Order Id {}", order.getOrderNumber());
 			return order.getOrderNumber();
 		} else {
